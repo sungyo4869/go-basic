@@ -8,7 +8,7 @@ import (
 )
 
 type ctxKeyOS struct{}
-var CtxKeyOS = ctxKeyOS{}
+var keyOS = ctxKeyOS{}
 
 func StoreOSName(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +16,7 @@ func StoreOSName(h http.Handler) http.Handler {
 		userAgent := r.UserAgent()
 		ua := useragent.Parse(userAgent)
 
-		ctx := context.WithValue(r.Context(), CtxKeyOS, ua.OS)
+		ctx := context.WithValue(r.Context(), keyOS, ua.OS)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)
