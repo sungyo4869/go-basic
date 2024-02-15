@@ -3,8 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"log"
-
+	
 	"github.com/sungyo4869/go-basic/model"
 )
 
@@ -26,6 +25,6 @@ func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(res)
 	// 失敗した場合、エラーを出力
 	if err != nil {
-		log.Print(err)
+		http.Error(w, "Bad Request", 400)
 	}
 }
