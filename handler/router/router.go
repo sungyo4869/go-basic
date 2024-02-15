@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sungyo4869/go-basic/handler"
+	"github.com/sungyo4869/go-basic/handler/middleware"
 	"github.com/sungyo4869/go-basic/service"
 )
 
@@ -15,6 +16,7 @@ func NewRouter(todoDB *sql.DB) *http.ServeMux {
 	// エンドポイントの定義
 	mux.HandleFunc("/healthz", handler.NewHealthzHandler().ServeHTTP)
 	mux.HandleFunc("/todos", handler.NewTODOHandler(service.NewTODOService(todoDB)).ServeHTTP)
+	mux.HandleFunc("/do-panic",middleware.Recovery(handler.NewPanicHandler()).ServeHTTP)
 
 	return mux
 }
