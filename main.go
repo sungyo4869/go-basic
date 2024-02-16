@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"time"
-	"net/http"
 
 	"github.com/sungyo4869/go-basic/db"
 	"github.com/sungyo4869/go-basic/handler/router"

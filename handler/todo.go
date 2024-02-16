@@ -32,20 +32,20 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if req.Subject == "" || err != nil{
 			// Subjectが空またはデコードに失敗した場合
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 		
 		// DBに格納
 		res, err := t.Create(r.Context(), &req)
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		err = json.NewEncoder(w).Encode(&res)
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
@@ -54,19 +54,19 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		err := json.NewDecoder(r.Body).Decode(&req);
 		if req.ID == 0 || req.Subject == "" || err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		res, err := t.Update(r.Context(), &req)
 		if err != nil{
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		err = json.NewEncoder(w).Encode(&res)
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
@@ -82,7 +82,7 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			// idが指定されていた場合、intにパース
 			req.PrevID, err = strconv.ParseInt(pramStr, 10, 64)
 			if err != nil {
-				http.Error(w, err.Error(), 400)
+				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 		}
@@ -92,7 +92,7 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			// サイズが指定されていた場合
 			req.Size, err = strconv.ParseInt(pramStr, 10, 64)
 			if err != nil {
-				http.Error(w, "Bad Request", 400)
+				http.Error(w, "Bad Request", http.StatusBadRequest)
 				return
 			}
 		}else {
@@ -102,13 +102,13 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		res, err := t.Read(r.Context(), &req)
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		err = json.NewEncoder(w).Encode(&res)
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
@@ -118,19 +118,19 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if len(req.IDs) == 0 || err != nil{
 			// idが指定されていないまたはデコードに失敗した場合
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		res, err := t.Delete(r.Context(), &req)
 		if err != nil{
-			http.Error(w, "NotFound", 404)
+			http.Error(w, "NotFound", http.StatusNotFound)
 			return
 		}
 
 		err = json.NewEncoder(w).Encode(&res)
 		if err != nil {
-			http.Error(w, "Bad Request", 400)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 	}
