@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -17,14 +18,15 @@ type LogFormat struct {
 func Log(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		accessTime := time.Now()
+		log.Print(accessTime)
 
 		h.ServeHTTP(w, r)
 
 		endTime := time.Now()
 
-		latency := endTime.Sub(accessTime)
+		latency := endTime.Sub(accessTime).Microseconds()
 		path := r.URL.String()
-		os := r.Context().Value(keyOS).(string)
+		os := r.Context().Value(ctxKeyOS{}).(string)
 
 		logData := LogFormat{
 			Timestamp: accessTime,
@@ -32,15 +34,14 @@ func Log(h http.Handler) http.Handler {
 			Path:      path,
 			OS:        os,
 		}
-
+		
 		jsonData, err := json.Marshal(logData)
 		if err != nil {
 			fmt.Println("構造体をJSONに変換できませんでした:", err)
 			return
 		}
-		// fmt.Println(logData)
-		fmt.Println(string(jsonData))
 
+		fmt.Println(string(jsonData))
 	}
 	return http.HandlerFunc(fn)
 }
