@@ -11,11 +11,9 @@ type ctxKeyOS struct{}
 
 func StoreOSName(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		userAgent := useragent.Parse(r.UserAgent())
 
-		userAgent := r.UserAgent()
-		ua := useragent.Parse(userAgent)
-
-		ctx := context.WithValue(r.Context(), ctxKeyOS{}, ua.OS)
+		ctx := context.WithValue(r.Context(), ctxKeyOS{}, userAgent.OS)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)
