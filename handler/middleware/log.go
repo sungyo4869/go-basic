@@ -37,7 +37,7 @@ func Log(h http.Handler) http.Handler {
 		
 		jsonData, err := json.Marshal(logData)
 		if err != nil {
-			fmt.Println("構造体をJSONに変換できませんでした:", err)
+			fmt.Println("log: unable to convert struct to JSON, err=", err)
 			return
 		}
 
