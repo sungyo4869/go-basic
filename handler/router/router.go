@@ -14,10 +14,9 @@ func NewRouter(todoDB *sql.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// エンドポイントの定義
-	mux.HandleFunc("/healthz", handler.NewHealthzHandler().ServeHTTP)
-	mux.HandleFunc("/todos", handler.NewTODOHandler(service.NewTODOService(todoDB)).ServeHTTP)
-	mux.HandleFunc("/do-panic", middleware.Recovery(handler.NewPanicHandler()).ServeHTTP)
-	mux.HandleFunc("/test", middleware.StoreOSName(middleware.Log(handler.NewHealthzHandler())).ServeHTTP)
+	mux.HandleFunc("/healthz", middleware.Recovery(middleware.StoreOSName(middleware.Log(handler.NewHealthzHandler()))).ServeHTTP)
+	mux.HandleFunc("/todos", middleware.Recovery(middleware.StoreOSName(middleware.Log(handler.NewTODOHandler(service.NewTODOService(todoDB))))).ServeHTTP)
+	mux.HandleFunc("/do-panic", middleware.Recovery(middleware.StoreOSName(middleware.Log(handler.NewPanicHandler()))).ServeHTTP)
 
 	return mux
 }
