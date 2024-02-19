@@ -9,7 +9,7 @@ func Recovery(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Print(err)
+				log.Print("recovery: err =", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
