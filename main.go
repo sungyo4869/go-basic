@@ -17,7 +17,7 @@ import (
 func main() {
 	wg := &sync.WaitGroup{}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
 	wg.Add(1)
@@ -86,7 +86,7 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 		fmt.Println("main: Failed to shutdown server, err=", err)
 		return err
 	}
-	
+
 	wg.Done()
 
 	return nil
