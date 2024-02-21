@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/sungyo4869/go-basic/db"
@@ -14,16 +15,20 @@ import (
 )
 
 func main() {
+	wg := &sync.WaitGroup{}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	err := realMain(ctx)
+	wg.Add(1)
+	err := realMain(ctx, wg)
 	if err != nil {
 		log.Fatalln("main: failed to exit successfully, err =", err)
 	}
+
 }
 
-func realMain(ctx context.Context) error {
+func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 	// config values
 	const (
 		defaultPort   = ":8080"
@@ -72,6 +77,7 @@ func realMain(ctx context.Context) error {
 	if err := srv.Shutdown(ctx); err != nil {
 		fmt.Println("main: Failed to shutdown server, err=", err)
 	}
+	wg.Done()
 
 	return nil
 }
