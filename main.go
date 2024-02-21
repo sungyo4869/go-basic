@@ -35,6 +35,8 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 		defaultDBPath = ".sqlite3/todo.db"
 	)
 
+	errChan := make(chan error, 1)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -68,12 +70,17 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 		Handler: mux,
 	}
 
-	err = srv.ListenAndServe()
+	go func() {
+		errChan <- srv.ListenAndServe()
+	}()
+
+	err = <-errChan
 	if err != nil {
 		return err
 	}
 
 	<-ctx.Done()
+
 	if err := srv.Shutdown(ctx); err != nil {
 		fmt.Println("main: Failed to shutdown server, err=", err)
 	}
