@@ -5,19 +5,25 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"os/signal"
+	"fmt"
+	"context"
 
 	"github.com/sungyo4869/go-basic/db"
 	"github.com/sungyo4869/go-basic/handler/router"
 )
 
 func main() {
-	err := realMain()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+    defer stop()
+
+	err := realMain(ctx)
 	if err != nil {
 		log.Fatalln("main: failed to exit successfully, err =", err)
 	}
 }
 
-func realMain() error {
+func realMain(ctx context.Context) error {
 	// config values
 	const (
 		defaultPort   = ":8080"
@@ -52,9 +58,20 @@ func realMain() error {
 	mux := router.NewRouter(todoDB)
 
 	// TODO: サーバーをlistenする
-	err = http.ListenAndServe(port, mux)
+	srv := &http.Server{
+		Addr: port,
+		Handler: mux,
+	}
+
+	err = srv.ListenAndServe()
 	if err != nil {
 		return err
 	}
+
+	<-ctx.Done()
+    if err := srv.Shutdown(ctx); err != nil {
+        fmt.Println("main: Failed to shutdown server, err=", err)
+	}
+    
 	return nil
 }
