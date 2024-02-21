@@ -81,9 +81,12 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 
 	<-ctx.Done()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	err = srv.Shutdown(ctx)
+	if err != nil {
 		fmt.Println("main: Failed to shutdown server, err=", err)
+		return err
 	}
+	
 	wg.Done()
 
 	return nil
