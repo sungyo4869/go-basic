@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"os/signal"
-	"fmt"
-	"context"
+	"time"
 
 	"github.com/sungyo4869/go-basic/db"
 	"github.com/sungyo4869/go-basic/handler/router"
@@ -15,7 +15,7 @@ import (
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-    defer stop()
+	defer stop()
 
 	err := realMain(ctx)
 	if err != nil {
@@ -59,7 +59,7 @@ func realMain(ctx context.Context) error {
 
 	// TODO: サーバーをlistenする
 	srv := &http.Server{
-		Addr: port,
+		Addr:    port,
 		Handler: mux,
 	}
 
@@ -69,9 +69,9 @@ func realMain(ctx context.Context) error {
 	}
 
 	<-ctx.Done()
-    if err := srv.Shutdown(ctx); err != nil {
-        fmt.Println("main: Failed to shutdown server, err=", err)
+	if err := srv.Shutdown(ctx); err != nil {
+		fmt.Println("main: Failed to shutdown server, err=", err)
 	}
-    
+
 	return nil
 }
