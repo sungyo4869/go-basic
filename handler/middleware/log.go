@@ -3,7 +3,6 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -11,14 +10,13 @@ import (
 type LogFormat struct {
 	Timestamp time.Time `json:"timestamp"`
 	Latency   int64     `json:"latency"`
-	Path      string    `json:"Path"`
+	Path      string    `json:"path"`
 	OS        string    `json:"os"`
 }
 
 func Log(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		accessTime := time.Now()
-		log.Print(accessTime)
 
 		h.ServeHTTP(w, r)
 

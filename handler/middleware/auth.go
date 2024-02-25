@@ -3,13 +3,24 @@ package middleware
 import (
 	"net/http"
 	"os"
+	"log"
+	"github.com/joho/godotenv"
 )
 
 func BasicAuth(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
-		userID := os.Args[1]
-		password := os.Args[2]
+		err := godotenv.Load()
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+	  
+		userID := os.Getenv("BASIC_AUTH_USER_ID")
+		password := os.Getenv("BASIC_AUTH_USER_PASSWORD")
+
+		log.Println(userID)
+		log.Println(password)
 
 		ui, pass, ok := r.BasicAuth()
  
