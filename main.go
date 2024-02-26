@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/sungyo4869/go-basic/db"
@@ -11,13 +15,20 @@ import (
 )
 
 func main() {
-	err := realMain()
+	wg := &sync.WaitGroup{}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer stop()
+
+	wg.Add(1)
+	err := realMain(ctx, wg)
 	if err != nil {
 		log.Fatalln("main: failed to exit successfully, err =", err)
 	}
+
 }
 
-func realMain() error {
+func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 	// config values
 	const (
 		defaultPort   = ":8080"
@@ -48,13 +59,37 @@ func realMain() error {
 	}
 	defer todoDB.Close()
 
-	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
 	mux := router.NewRouter(todoDB)
 
-	// TODO: サーバーをlistenする
-	err = http.ListenAndServe(port, mux)
-	if err != nil {
-		return err
+	srv := &http.Server{
+		Addr:    port,
+		Handler: mux,
 	}
+
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- srv.ListenAndServe()
+	}()
+
+	select {
+    case err := <-errChan:
+        if err != nil && err != http.ErrServerClosed {
+            return err
+        }
+    case <-ctx.Done():
+		shutdownErrChan := make(chan error, 1)
+        go func() {
+        	shutdownErrChan <- srv.Shutdown(context.Background())
+        }()
+
+		err = <- shutdownErrChan;
+		if err != nil {
+			fmt.Println("main: Failed to shutdown server, err=", err)
+		} else {
+			fmt.Println("main: Server shutdown completed successfully")
+		}
+
+		wg.Done()
+    }
 	return nil
 }
