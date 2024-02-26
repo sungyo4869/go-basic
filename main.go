@@ -35,8 +35,6 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 		defaultDBPath = ".sqlite3/todo.db"
 	)
 
-	errChan := make(chan error, 1)
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -61,33 +59,37 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 	defer todoDB.Close()
 
-	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
 	mux := router.NewRouter(todoDB)
 
-	// TODO: サーバーをlistenする
 	srv := &http.Server{
 		Addr:    port,
 		Handler: mux,
 	}
 
+	errChan := make(chan error, 1)
 	go func() {
 		errChan <- srv.ListenAndServe()
 	}()
 
-	err = <-errChan
-	if err != nil {
-		return err
-	}
+	select {
+    case err := <-errChan:
+        if err != nil && err != http.ErrServerClosed {
+            return err
+        }
+    case <-ctx.Done():
+		shutdownErrChan := make(chan error, 1)
+        go func() {
+        	shutdownErrChan <- srv.Shutdown(context.Background())
+        }()
 
-	<-ctx.Done()
+		err = <- shutdownErrChan;
+		if err != nil {
+			fmt.Println("main: Failed to shutdown server, err=", err)
+		} else {
+			fmt.Println("main: Server shutdown completed successfully")
+		}
 
-	err = srv.Shutdown(ctx)
-	if err != nil {
-		fmt.Println("main: Failed to shutdown server, err=", err)
-		return err
-	}
-
-	wg.Done()
-
+		wg.Done()
+    }
 	return nil
 }
