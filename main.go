@@ -66,23 +66,23 @@ func realMain(ctx context.Context, wg *sync.WaitGroup) error {
 		Handler: mux,
 	}
 
-	errChan := make(chan error, 1)
+	startUpErrCh := make(chan error, 1)
 	go func() {
-		errChan <- srv.ListenAndServe()
+		startUpErrCh <- srv.ListenAndServe()
 	}()
 
 	select {
-    case err := <-errChan:
+    case err = <-startUpErrCh:
         if err != nil && err != http.ErrServerClosed {
             return err
         }
     case <-ctx.Done():
-		shutdownErrChan := make(chan error, 1)
+		shutdownErrCh := make(chan error, 1)
         go func() {
-        	shutdownErrChan <- srv.Shutdown(context.Background())
+        	shutdownErrCh <- srv.Shutdown(context.Background())
         }()
 
-		err = <- shutdownErrChan;
+		err = <- shutdownErrCh;
 		if err != nil {
 			fmt.Println("main: Failed to shutdown server, err=", err)
 		} else {
